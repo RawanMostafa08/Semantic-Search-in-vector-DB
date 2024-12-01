@@ -118,7 +118,25 @@ class VecDB:
 
         faiss.write_index(index, self.index_path)
 
+        # n_clusters = 1000 
+        # batch_size = 1000
+        # kmeans = MiniBatchKMeans(n_clusters=n_clusters, random_state=DB_SEED_NUMBER, batch_size=batch_size)
 
+        # for i in range(0, self._get_num_records(), batch_size):
+        #     batch = self.get_n_rows(i, batch_size)
+        #     kmeans.partial_fit(batch)
+
+        # with open(self.index_path, 'wb') as index_file:
+        #     pickle.dump(kmeans, index_file)
+
+        #     for i in range(0, self._get_num_records(), batch_size):
+
+        #         batch = self.get_n_rows(i, batch_size)
+        #         labels = kmeans.predict(batch) 
+
+        #         for label, vector in zip(labels, batch):
+        #             index_file.write(label.to_bytes(4, 'little')) 
+        #             index_file.write(vector.tobytes())
 
         
         
