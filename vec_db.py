@@ -138,23 +138,23 @@ class VecDB:
 
                         distance = self._cal_score(query, vector)
                         # normal list
-                        nearest_neighbors.append((id, vector, distance))
+                        # nearest_neighbors.append((id, vector, distance))
 
                         # heap queue
-                        # if len(nearest_neighbors) < top_k:
-                        #     heapq.heappush(nearest_neighbors, (-distance,id,vector))
-                        # else:
-                        #     heapq.heappushpop(nearest_neighbors, (-distance,id,vector))
+                        if len(nearest_neighbors) < top_k:
+                            heapq.heappush(nearest_neighbors, (distance,id,vector))
+                        else:
+                            heapq.heappushpop(nearest_neighbors, (distance,id,vector))
 
         # heap queue
-        # nearest_neighbors = sorted(nearest_neighbors, key=lambda x: -x[0])
+        nearest_neighbors = sorted(nearest_neighbors, key=lambda x: -x[0])
 
         # normal list
-        nearest_neighbors = sorted(nearest_neighbors, key=lambda x: -x[2])[:top_k]
+        # nearest_neighbors = sorted(nearest_neighbors, key=lambda x: -x[2])[:top_k]
 
 
         # Return the top-k vectors
-        ids = [int(id) for id,_,_ in nearest_neighbors]
+        ids = [int(id) for _,id,_ in nearest_neighbors]
         # print("OUR IDs",ids)
         return ids
         
