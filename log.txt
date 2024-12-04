@@ -1,6 +1,0 @@
-Defaulting to user installation because normal site-packages is not writeable
-Collecting memory-profiler
-  Downloading memory_profiler-0.61.0-py3-none-any.whl (31 kB)
-Requirement already satisfied: psutil in /usr/lib/python3/dist-packages (from memory-profiler) (5.9.0)
-Installing collected packages: memory-profiler
-Successfully installed memory-profiler-0.61.0

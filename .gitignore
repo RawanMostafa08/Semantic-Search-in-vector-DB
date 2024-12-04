@@ -1,0 +1,5 @@
+clusters
+__pycache__
+index.dat
+saved_db.dat
+*.dat
