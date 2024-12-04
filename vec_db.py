@@ -7,15 +7,16 @@ import pickle
 import heapq
 import numpy as np
 from sklearn.cluster import KMeans
+import nanopq
 
 DB_SEED_NUMBER = 42
 ELEMENT_SIZE = np.dtype(np.float32).itemsize
 ID_SIZE = np.dtype(np.int32).itemsize
 DIMENSION = 70
-
-n_clusters = 250 
-batch_size = 1000
-nprobe = 30
+ELEMENT_SIZE_AFTER_PQ = np.dtype(np.uint8).itemsize
+n_clusters = 20 
+batch_size = 250
+nprobe = 5
 
 
 class VecDB:
@@ -23,6 +24,7 @@ class VecDB:
         self.db_path = database_file_path
         self.index_path = index_file_path
         self.cluster_dir_paths = cluster_dir_path
+        self.pq = nanopq.PQ(M=10, Ks=128)
         if new_db:
             if db_size is None:
                 raise ValueError("You need to provide the size of the database")
@@ -127,17 +129,23 @@ class VecDB:
                 with open(cluster_file_path, 'rb') as f:
                     while True:
                         id_bytes = f.read(ID_SIZE)
-                        vector_bytes = f.read(DIMENSION * ELEMENT_SIZE)
+                        vector_bytes = f.read(10 * ELEMENT_SIZE_AFTER_PQ)
 
                         if not vector_bytes or not id_bytes:
                             break
 
-                        vector = np.frombuffer(vector_bytes, dtype=np.float32)
+                        vector = np.frombuffer(vector_bytes, dtype=np.uint8)
+                        print(vector)
+                        listx=np.tile(vector, (batch_size, 1))
+                        print(type(listx))
+                        print("Self.M",self.pq.M)
+                        
+                        decoded_vector = self.pq.decode(listx)
                         id = np.frombuffer(id_bytes, dtype=np.int32)[0]
                         # print("idddd",id)
 
 
-                        distance = self._cal_score(query, vector)
+                        distance = self._cal_score(query, decoded_vector[0])
                         # normal list
                         # nearest_neighbors.append((id, vector, distance))
 
@@ -194,6 +202,8 @@ class VecDB:
         for i in range(0, self._get_num_records(), batch_size):
             batch = self.get_n_rows(i, batch_size)
             kmeans.partial_fit(batch)
+        self.pq.fit(batch)
+
 
         with open(self.index_path, 'wb') as index_file:
             pickle.dump(kmeans, index_file)
@@ -214,67 +224,12 @@ class VecDB:
                 batch = self.get_n_rows(i, batch_size)
                 labels = kmeans.predict(batch)
                 ids = range(i, i + batch_size)
+                encoded_vectors = self.pq.encode(batch)
                 # print("Labels",labels)
     
-                for label, vector, id in zip(labels, batch, ids):
+                for label, vector, id in zip(labels, encoded_vectors, ids):
                     cluster_files[label].write(id.to_bytes(ID_SIZE, byteorder='little'))
                     cluster_files[label].write(vector.tobytes())
         finally:
             for f in cluster_files.values():
                 f.close()
-
-        
-        
-
-        
-class ProductQuantizer:
-    def _init_(self, num_subspaces, num_centroids):
-        self.num_subspaces = num_subspaces
-        self.num_centroids = num_centroids
-        self.codebooks = []  # Stores k-means centroids for each subspace
-
-    def fit(self, data):
-        """
-        Fit the product quantizer on the dataset.
-        :param data: NxD matrix where N is the number of data points and D is the dimensionality.
-        """
-        N, D = data.shape
-        assert D % self.num_subspaces == 0, "Dimensionality must be divisible by num_subspaces."
-        self.subspace_dim = D // self.num_subspaces
-
-        # Split data into subspaces
-        for i in range(self.num_subspaces):
-            subspace = data[:, i * self.subspace_dim: (i + 1) * self.subspace_dim]
-            kmeans = KMeans(n_clusters=self.num_centroids, random_state=42).fit(subspace)
-            self.codebooks.append(kmeans)
-
-    def encode(self, data):
-        """
-        Encode the dataset using the trained codebooks.
-        :param data: NxD matrix of data points.
-        :return: NxM matrix of quantization indices, where M is the number of subspaces.
-        """
-        N, D = data.shape
-        codes = np.zeros((N, self.num_subspaces), dtype=np.int32)
-
-        for i in range(self.num_subspaces):
-            subspace = data[:, i * self.subspace_dim: (i + 1) * self.subspace_dim]
-            codes[:, i] = self.codebooks[i].predict(subspace)
-
-        return codes
-
-    def decode(self, codes):
-        """
-        Reconstruct the data points from their quantization indices.
-        :param codes: NxM matrix of quantization indices.
-        :return: NxD reconstructed data matrix.
-        """
-        N, M = codes.shape
-        D = M * self.subspace_dim
-        reconstructed = np.zeros((N, D))
-
-        for i in range(self.num_subspaces):
-            centroids = self.codebooks[i].cluster_centers_
-            reconstructed[:, i * self.subspace_dim: (i + 1) * self.subspace_dim] = centroids[codes[:, i]]
-
-        return reconstructed
