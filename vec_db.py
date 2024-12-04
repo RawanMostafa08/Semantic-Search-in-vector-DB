@@ -5,7 +5,8 @@ import shutil
 from sklearn.cluster import MiniBatchKMeans
 import pickle
 import heapq
-
+import numpy as np
+from sklearn.cluster import KMeans
 
 DB_SEED_NUMBER = 42
 ELEMENT_SIZE = np.dtype(np.float32).itemsize
@@ -198,8 +199,8 @@ class VecDB:
             pickle.dump(kmeans, index_file)
 
         # print("Cluster centers",kmeans.cluster_centers_)
-        # if os.path.exists(self.cluster_dir_paths):
-        #     shutil.rmtree(self.cluster_dir_paths)
+        if os.path.exists(self.cluster_dir_paths):
+            shutil.rmtree(self.cluster_dir_paths)
 
         os.makedirs(self.cluster_dir_paths, exist_ok=True)
     
@@ -226,7 +227,54 @@ class VecDB:
         
 
         
+class ProductQuantizer:
+    def _init_(self, num_subspaces, num_centroids):
+        self.num_subspaces = num_subspaces
+        self.num_centroids = num_centroids
+        self.codebooks = []  # Stores k-means centroids for each subspace
 
-    
+    def fit(self, data):
+        """
+        Fit the product quantizer on the dataset.
+        :param data: NxD matrix where N is the number of data points and D is the dimensionality.
+        """
+        N, D = data.shape
+        assert D % self.num_subspaces == 0, "Dimensionality must be divisible by num_subspaces."
+        self.subspace_dim = D // self.num_subspaces
 
+        # Split data into subspaces
+        for i in range(self.num_subspaces):
+            subspace = data[:, i * self.subspace_dim: (i + 1) * self.subspace_dim]
+            kmeans = KMeans(n_clusters=self.num_centroids, random_state=42).fit(subspace)
+            self.codebooks.append(kmeans)
 
+    def encode(self, data):
+        """
+        Encode the dataset using the trained codebooks.
+        :param data: NxD matrix of data points.
+        :return: NxM matrix of quantization indices, where M is the number of subspaces.
+        """
+        N, D = data.shape
+        codes = np.zeros((N, self.num_subspaces), dtype=np.int32)
+
+        for i in range(self.num_subspaces):
+            subspace = data[:, i * self.subspace_dim: (i + 1) * self.subspace_dim]
+            codes[:, i] = self.codebooks[i].predict(subspace)
+
+        return codes
+
+    def decode(self, codes):
+        """
+        Reconstruct the data points from their quantization indices.
+        :param codes: NxM matrix of quantization indices.
+        :return: NxD reconstructed data matrix.
+        """
+        N, M = codes.shape
+        D = M * self.subspace_dim
+        reconstructed = np.zeros((N, D))
+
+        for i in range(self.num_subspaces):
+            centroids = self.codebooks[i].cluster_centers_
+            reconstructed[:, i * self.subspace_dim: (i + 1) * self.subspace_dim] = centroids[codes[:, i]]
+
+        return reconstructed
