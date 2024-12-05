@@ -13,9 +13,9 @@ ELEMENT_SIZE = np.dtype(np.float32).itemsize
 ID_SIZE = np.dtype(np.int32).itemsize
 DIMENSION = 70
 
-n_clusters = 250 
+n_clusters = 1000 
 batch_size = 1000
-nprobe = 30
+nprobe = 15
 
 
 class VecDB:
@@ -127,13 +127,17 @@ class VecDB:
                 with open(cluster_file_path, 'rb') as f:
                     while True:
                         id_bytes = f.read(ID_SIZE)
-                        vector_bytes = f.read(DIMENSION * ELEMENT_SIZE)
-
-                        if not vector_bytes or not id_bytes:
+                        if not id_bytes:
                             break
-
-                        vector = np.frombuffer(vector_bytes, dtype=np.float32)
                         id = np.frombuffer(id_bytes, dtype=np.int32)[0]
+                        vector = self.get_one_row(id)
+                        # vector_bytes = f.read(DIMENSION * ELEMENT_SIZE)
+
+                        # if not vector_bytes or not id_bytes:
+                        #     break
+
+                        # vector = np.frombuffer(vector_bytes, dtype=np.float32)
+                        # id = np.frombuffer(id_bytes, dtype=np.int32)[0]
                         # print("idddd",id)
 
 
@@ -218,7 +222,7 @@ class VecDB:
     
                 for label, vector, id in zip(labels, batch, ids):
                     cluster_files[label].write(id.to_bytes(ID_SIZE, byteorder='little'))
-                    cluster_files[label].write(vector.tobytes())
+                    # cluster_files[label].write(vector.tobytes())
         finally:
             for f in cluster_files.values():
                 f.close()
