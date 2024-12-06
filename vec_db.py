@@ -127,19 +127,12 @@ class VecDB:
                 with open(cluster_file_path, 'rb') as f:
                     while True:
                         id_bytes = f.read(ID_SIZE)
+
                         if not id_bytes:
                             break
+
                         id = np.frombuffer(id_bytes, dtype=np.int32)[0]
                         vector = self.get_one_row(id)
-                        # vector_bytes = f.read(DIMENSION * ELEMENT_SIZE)
-
-                        # if not vector_bytes or not id_bytes:
-                        #     break
-
-                        # vector = np.frombuffer(vector_bytes, dtype=np.float32)
-                        # id = np.frombuffer(id_bytes, dtype=np.int32)[0]
-                        # print("idddd",id)
-
 
                         distance = self._cal_score(query, vector)
                         # normal list
@@ -173,20 +166,6 @@ class VecDB:
     def _build_index(self):
         # Placeholder for index building logic
 
-        # nlist = 100 # number of clusters
-        # m = 10
-        # k = 4
-        # quantizer = faiss.IndexFlatL2(DIMENSION)  # this remains the same
-        # index = faiss.IndexIVFPQ(quantizer, DIMENSION, nlist, m, 6)
-        #                                   # 8 specifies that each sub-vector is encoded as 8 bits
-        # for i in range(0,self._get_num_records(),100):
-        #     xb = self.get_n_rows(i,100)
-        
-        #     index.train(xb)
-        #     index.add(xb)
-
-        # faiss.write_index(index, self.index_path)
-
         # 1 000 000 / 4 000 rows = 250 cluster
         # 10 000 000/ 4 000 rows = 2500 cluster
         # 15 000 000/ 4 000 rows = 3750 cluster
@@ -218,67 +197,10 @@ class VecDB:
                 batch = self.get_n_rows(i, batch_size)
                 labels = kmeans.predict(batch)
                 ids = range(i, i + batch_size)
-                # print("Labels",labels)
     
                 for label, vector, id in zip(labels, batch, ids):
                     cluster_files[label].write(id.to_bytes(ID_SIZE, byteorder='little'))
-                    # cluster_files[label].write(vector.tobytes())
         finally:
             for f in cluster_files.values():
                 f.close()
 
-        
-        
-
-        
-class ProductQuantizer:
-    def _init_(self, num_subspaces, num_centroids):
-        self.num_subspaces = num_subspaces
-        self.num_centroids = num_centroids
-        self.codebooks = []  # Stores k-means centroids for each subspace
-
-    def fit(self, data):
-        """
-        Fit the product quantizer on the dataset.
-        :param data: NxD matrix where N is the number of data points and D is the dimensionality.
-        """
-        N, D = data.shape
-        assert D % self.num_subspaces == 0, "Dimensionality must be divisible by num_subspaces."
-        self.subspace_dim = D // self.num_subspaces
-
-        # Split data into subspaces
-        for i in range(self.num_subspaces):
-            subspace = data[:, i * self.subspace_dim: (i + 1) * self.subspace_dim]
-            kmeans = KMeans(n_clusters=self.num_centroids, random_state=42).fit(subspace)
-            self.codebooks.append(kmeans)
-
-    def encode(self, data):
-        """
-        Encode the dataset using the trained codebooks.
-        :param data: NxD matrix of data points.
-        :return: NxM matrix of quantization indices, where M is the number of subspaces.
-        """
-        N, D = data.shape
-        codes = np.zeros((N, self.num_subspaces), dtype=np.int32)
-
-        for i in range(self.num_subspaces):
-            subspace = data[:, i * self.subspace_dim: (i + 1) * self.subspace_dim]
-            codes[:, i] = self.codebooks[i].predict(subspace)
-
-        return codes
-
-    def decode(self, codes):
-        """
-        Reconstruct the data points from their quantization indices.
-        :param codes: NxM matrix of quantization indices.
-        :return: NxD reconstructed data matrix.
-        """
-        N, M = codes.shape
-        D = M * self.subspace_dim
-        reconstructed = np.zeros((N, D))
-
-        for i in range(self.num_subspaces):
-            centroids = self.codebooks[i].cluster_centers_
-            reconstructed[:, i * self.subspace_dim: (i + 1) * self.subspace_dim] = centroids[codes[:, i]]
-
-        return reconstructed
