@@ -21,3 +21,11 @@ nprobe_1 = 30
 n_clusters_2 = 500
 batch_size_2 = 1
 nprobe_2 = 500
+
+
+score	-226.0	time	1.88	RAM	58.68 MB
+n_clusters_1 = 1000
+nprobe_1 = 30
+
+n_clusters_2 = 100
+nprobe_2 = 100
