@@ -1,0 +1,18 @@
+1M
+score	-63.666666666666664	time	0.94	RAM	8.14 MB
+            nprobe_1 = 30
+            nprobe_2 = 20     
+            scaling_factor = 500
+            n_clusters_1 = int(4 * np.sqrt(num_records))
+            n_clusters_2 = min_length
+
+10M
+score	-70.33333333333333	time	1.81	RAM	10.95 MB
+            nprobe_1 = 50
+            nprobe_2 = 20
+            scaling_factor = 1000
+            n_clusters_1 = int(4 * np.sqrt(num_records))
+            n_clusters_2 = min_length
+
+
+
