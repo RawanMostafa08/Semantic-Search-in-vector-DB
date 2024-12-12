@@ -93,9 +93,11 @@ Team Number 13
             nprobe_1 = 400
             nprobe_2 = 200
 
-
-
-
+Team Number 13
+1M	score	0.0	time	1.68	RAM	9.11 MB
+10M	score	0.0	time	5.87	RAM	24.20 MB
+15M	score	-114.66666666666667	time	6.80	RAM	11.93 MB
+20M	score	0.0	time	12.04	RAM	5.04 MB
         if num_records == 10**6:
             available_ram = 20*10**6
             scaling_factor = 500
