@@ -1,0 +1,8 @@
+seed = 10
+Team Number 13
+1M	score	-29.666666666666668	time	0.63	RAM	8.72 MB
+10M	score	-25.333333333333332	time	3.69	RAM	12.99 MB
+15M	score	-205.0	time	2.63	RAM	6.72 MB
+20M	score	-113.0	time	5.72	RAM	3.20 MB
+
+seed = 20
