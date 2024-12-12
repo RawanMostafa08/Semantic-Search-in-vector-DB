@@ -109,26 +109,26 @@ class VecDB:
         if num_records == 10**6:
             available_ram = 20*10**6
             scaling_factor = 500
-            nprobe_1 = 100
-            nprobe_2 = 50
+            nprobe_1 = 90
+            nprobe_2 = 40
             
         elif num_records == 10*10**6:
             available_ram = 50*10**6
-            scaling_factor = 50
-            nprobe_1 = 100
-            nprobe_2 = 50
+            scaling_factor = 500
+            nprobe_1 = 90
+            nprobe_2 = 40
 
         elif num_records == 15*10**6:
             available_ram = 50*10**6
             scaling_factor = 1000
-            nprobe_1 = 150
-            nprobe_2 = 75
+            nprobe_1 = 100
+            nprobe_2 = 50
         
         elif num_records == 20*10**6:
             available_ram = 50*10**6
-            scaling_factor = 50
-            nprobe_1 = 300
-            nprobe_2 = 150
+            scaling_factor = 4000
+            nprobe_1 = 200
+            nprobe_2 = 100
 
             
         vector_size_bytes = DIMENSION * ELEMENT_SIZE  
@@ -206,6 +206,9 @@ class VecDB:
 
         elif num_records == 15*10**6:
             n_clusters_1 = 10000
+            batch_size_1 = 750
+            batch_size_2 = 10
+            max_iter = 1000
         
         elif num_records == 20*10**6:
             n_clusters_1 = 13000
@@ -239,6 +242,11 @@ class VecDB:
         n_clusters_2 = min_length
 
         db_size = num_records//10**6  
+
+        if os.path.exists(self.index_file):
+            shutil.rmtree(self.index_file)
+        os.makedirs(self.index_file, exist_ok=True)
+
         file_path = os.path.join(self.index_file, f'centroids{db_size}.dat')
         
         with open(file_path, 'wb') as centroids_file:
@@ -246,12 +254,8 @@ class VecDB:
 
         ############################## SECOND LEVEL #######################################
 
-        kmeans_2nd_level = MiniBatchKMeans(n_clusters=n_clusters_2, batch_size=batch_size_2, max_iter=200,n_init=10)
+        kmeans_2nd_level = MiniBatchKMeans(n_clusters=n_clusters_2, batch_size=batch_size_2, max_iter=max_iter,n_init=10)
 
-        if os.path.exists(self.clusters_dir_path):
-            shutil.rmtree(self.clusters_dir_path)
-
-        os.makedirs(self.clusters_dir_path, exist_ok=True)
         
         for i,centroid_1 in enumerate(cluster_mapping.keys()):
         
@@ -268,7 +272,8 @@ class VecDB:
     
             for vector_id, label in zip(cluster_vector_ids,labels):
                 centroid_2_key = tuple(centroids_2[label])
-                cluster_mapping_2[centroid_2_key].append(vector_id)  
+                cluster_mapping_2[centroid_2_key].append(vector_id) 
+
                 
             file_path = os.path.join(self.index_file, f'{i}.dat')
             with open(file_path, 'wb') as index_file:
