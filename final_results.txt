@@ -6,3 +6,31 @@ Team Number 13
 20M	score	-113.0	time	5.72	RAM	3.20 MB
 
 seed = 20
+Team Number 13
+1M	score	0.0	time	1.92	RAM	9.37 MB
+10M	score	0.0	time	12.10	RAM	12.75 MB
+15M	score	-30.333333333333332	time	14.86	RAM	6.70 MB
+20M	score	0.0	time	20.99	RAM	3.54 MB
+        if num_records == 10**6:
+            available_ram = 20*10**6
+            scaling_factor = 500
+            nprobe_1 = 100
+            nprobe_2 = 50
+            
+        elif num_records == 10*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 1000
+            nprobe_1 = 200
+            nprobe_2 = 100
+
+        elif num_records == 15*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 2000
+            nprobe_1 = 300
+            nprobe_2 = 150
+        
+        elif num_records == 20*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 10000
+            nprobe_1 = 400
+            nprobe_2 = 200
