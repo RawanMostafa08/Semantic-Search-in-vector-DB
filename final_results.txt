@@ -63,3 +63,59 @@ Team Number 13
             scaling_factor = 4000
             nprobe_1 = 400
             nprobe_2 = 200
+
+Team Number 13
+1M	score	0.0	time	1.67	RAM	9.06 MB
+10M	score	0.0	time	10.03	RAM	57.77 MB
+15M	score	-30.333333333333332	time	12.93	RAM	55.56 MB
+20M	score	0.0	time	13.86	RAM	24.09 MB
+            if num_records == 10**6:
+            available_ram = 20*10**6
+            scaling_factor = 500
+            nprobe_1 = 100
+            nprobe_2 = 50
+            
+        elif num_records == 10*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 200
+            nprobe_1 = 100
+            nprobe_2 = 50
+
+        elif num_records == 15*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 200
+            nprobe_1 = 300
+            nprobe_2 = 150
+        
+        elif num_records == 20*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 500
+            nprobe_1 = 400
+            nprobe_2 = 200
+
+
+
+
+        if num_records == 10**6:
+            available_ram = 20*10**6
+            scaling_factor = 500
+            nprobe_1 = 100
+            nprobe_2 = 50
+            
+        elif num_records == 10*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 500
+            nprobe_1 = 100
+            nprobe_2 = 50
+
+        elif num_records == 15*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 1000
+            nprobe_1 = 150
+            nprobe_2 = 75
+        
+        elif num_records == 20*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 4000
+            nprobe_1 = 300
+            nprobe_2 = 150
