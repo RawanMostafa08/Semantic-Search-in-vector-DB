@@ -6,38 +6,29 @@ from sklearn.cluster import MiniBatchKMeans
 import pickle
 import heapq
 import numpy as np
-from sklearn.cluster import KMeans
-import nanopq
 
 DB_SEED_NUMBER = 42
 ELEMENT_SIZE = np.dtype(np.float32).itemsize
-ID_SIZE = np.dtype(np.int32).itemsize
 DIMENSION = 70
-ELEMENT_SIZE_AFTER_PQ = np.dtype(np.uint8).itemsize
-n_clusters = 20 
-batch_size = 250
-nprobe = 5
-
 
 class VecDB:
-    def __init__(self, database_file_path = "saved_db.dat", index_file_path = "index.dat", cluster_dir_path="clusters", new_db = True, db_size = None) -> None:
+    def __init__(self, database_file_path = "saved_db.dat",index_file_path="clusters1", new_db = True, db_size = None) -> None:
         self.db_path = database_file_path
-        self.index_path = index_file_path
-        self.cluster_dir_paths = cluster_dir_path
-        self.pq = nanopq.PQ(M=10, Ks=128)
+        self.index_file = index_file_path
         if new_db:
             if db_size is None:
                 raise ValueError("You need to provide the size of the database")
             # delete the old DB file if exists
             if os.path.exists(self.db_path):
                 os.remove(self.db_path)
-            self.generate_database(db_size)
-    
+            self.vectors = self.generate_database(db_size)
+
     def generate_database(self, size: int) -> None:
         rng = np.random.default_rng(DB_SEED_NUMBER)
         vectors = rng.random((size, DIMENSION), dtype=np.float32)
         self._write_vectors_to_file(vectors)
         self._build_index()
+        return vectors
 
     def _write_vectors_to_file(self, vectors: np.ndarray) -> None:
         mmap_vectors = np.memmap(self.db_path, dtype=np.float32, mode='w+', shape=vectors.shape)
@@ -65,7 +56,7 @@ class VecDB:
             return np.array(mmap_vector[0])
         except Exception as e:
             return f"An error occurred: {e}"
-        
+
     def get_n_rows(self, row_num: int, n: int) -> np.ndarray:
         # This function loads a specified number of rows starting from row_num
         try:
@@ -76,97 +67,120 @@ class VecDB:
             return f"An error occurred: {e}"
 
 
+    def get_n_random_rows(self, indices) -> np.ndarray:
+        try:
+            min_idx = indices.min()
+            max_idx = indices.max()
+            offset = min_idx * DIMENSION * ELEMENT_SIZE
+            n_rows = max_idx - min_idx + 1
+
+            mmap_vector = np.memmap(
+                self.db_path,
+                dtype=np.float32,
+                mode='r',
+                shape=(n_rows, DIMENSION),
+                offset=offset
+            ) 
+            relative_indices = indices - min_idx
+            return np.array(mmap_vector[relative_indices])
+        except Exception as e:
+            return np.empty((len(indices), DIMENSION), dtype=np.float32)
+
+
     def get_all_rows(self) -> np.ndarray:
         # Take care this load all the data in memory
         num_records = self._get_num_records()
         vectors = np.memmap(self.db_path, dtype=np.float32, mode='r', shape=(num_records, DIMENSION))
         return np.array(vectors)
-    
-    # def retrieve(self, query: Annotated[np.ndarray, (1, DIMENSION)], top_k = 5):
-    #     scores = []
-    #     num_records = self._get_num_records()
-    #     # here we assume that the row number is the ID of each vector
-    #     for row_num in range(num_records):
-    #         vector = self.get_one_row(row_num)
-    #         score = self._cal_score(query, vector)
-    #         scores.append((score, row_num))
-    #     # here we assume that if two rows have the same score, return the lowest ID
-    #     scores = sorted(scores, reverse=True)[:top_k]
-    #     return [s[1] for s in scores]
+        
 
     def retrieve(self, query: Annotated[np.ndarray, (1, DIMENSION)], top_k=5):
 
-        if not os.path.exists(self.cluster_dir_paths):
-            raise FileNotFoundError(f"Cluster directory '{self.cluster_dir_paths}' not found")
+        if not os.path.exists(self.index_file):
+            raise FileNotFoundError(f"Cluster directory '{self.index_file}' not found")
         
-        with open(self.index_path, 'rb') as index_file:
-            kmeans = pickle.load(index_file)
+        num_records= self._get_num_records()  
+        db_size = num_records//10**6  
+        file_path = os.path.join(self.index_file, f'centroids{db_size}.dat')
 
-        clusters_distance={} #{"id":distance}
-        centroids = kmeans.cluster_centers_ 
-        labels = kmeans.labels_
+        with open(file_path, 'rb') as centroids_file:
+            centroids_1 = pickle.load(centroids_file)
+            
+        if num_records == 10**6:
+            available_ram = 20*10**6
+            scaling_factor = 500
+            nprobe_1 = 30
+            nprobe_2 = 20
+            
+        elif num_records == 10*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 1000
+            nprobe_1 = 50
+            nprobe_2 = 20
 
+        elif num_records == 15*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 2000
+            nprobe_1 = 50
+            nprobe_2 = 20
+        
+        elif num_records == 20*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 10000
+            nprobe_1 = 20
+            nprobe_2 = 10
 
-        for i in range(0,nprobe):
-            distance = self._cal_score(query,centroids[i])
-            clusters_distance[int(labels[i])] = distance
+            
+        vector_size_bytes = DIMENSION * ELEMENT_SIZE  
+        max_batch_size = available_ram // (vector_size_bytes * scaling_factor)
+        
+        # First-level clustering
+        nearest_neighbors_1 = sorted(
+            [(centroid_1, self._cal_score(query, centroid_1),i) for i,centroid_1 in enumerate(centroids_1)],
+            key=lambda x: -x[1]
+        )[:nprobe_1]
+    
+        # Second-level clustering
+        top_k_heap = []
+        for _,_,i in nearest_neighbors_1:
 
-        closest_clusters = dict(sorted(clusters_distance.items(), key=lambda item: item[1]))
-
-        closest_cluster_ids = list(closest_clusters.keys())
-        # print(closest_cluster_ids)
-
-        nearest_neighbors = []
-
-        for cluster_file in os.listdir(self.cluster_dir_paths):
-
-            if int(cluster_file.split(".")[0]) in closest_cluster_ids: 
-                cluster_file_path = os.path.join(self.cluster_dir_paths, cluster_file)
-
-                if not os.path.exists(cluster_file_path):
-                    continue 
-
-                with open(cluster_file_path, 'rb') as f:
-                    while True:
-                        id_bytes = f.read(ID_SIZE)
-                        vector_bytes = f.read(10 * ELEMENT_SIZE_AFTER_PQ)
-
-                        if not vector_bytes or not id_bytes:
-                            break
-
-                        vector = np.frombuffer(vector_bytes, dtype=np.uint8)
-                        print(vector)
-                        listx=np.tile(vector, (batch_size, 1))
-                        print(type(listx))
-                        print("Self.M",self.pq.M)
-                        
-                        decoded_vector = self.pq.decode(listx)
-                        id = np.frombuffer(id_bytes, dtype=np.int32)[0]
-                        # print("idddd",id)
-
-
-                        distance = self._cal_score(query, decoded_vector[0])
-                        # normal list
-                        # nearest_neighbors.append((id, vector, distance))
-
-                        # heap queue
-                        if len(nearest_neighbors) < top_k:
-                            heapq.heappush(nearest_neighbors, (distance,id,vector))
+            file_path = os.path.join(self.index_file, f'{i}.dat')
+            with open(file_path, 'rb') as index_file:
+                index = pickle.load(index_file)
+                
+            nearest_neighbors_2 = sorted(
+                [(centroid_2, self._cal_score(query, centroid_2),i) for i,centroid_2 in enumerate(index.keys())],
+                key=lambda x: -x[1]
+            )[:nprobe_2]
+                
+            for centroid_2, _,_ in nearest_neighbors_2: 
+                cluster_ids = index[centroid_2]
+                
+                cluster_ids_np = np.array(cluster_ids)
+                batch_size = min(len(cluster_ids), max_batch_size)
+                if batch_size == 0:
+                    batch_size = 1
+                    
+                for i in range(0,len(cluster_ids),batch_size):
+                    batch_ids = cluster_ids_np[i:i + batch_size]
+                    cluster_vectors = self.get_n_random_rows(batch_ids)
+                    
+                    # print(len(cluster_ids),len(batch_ids)) 
+                    
+                    for idx, vector in enumerate(cluster_vectors):
+                        distance = self._cal_score(query, vector)
+                        if len(top_k_heap) < top_k:
+                            heapq.heappush(top_k_heap, (distance, batch_ids[idx]))
                         else:
-                            heapq.heappushpop(nearest_neighbors, (distance,id,vector))
+                            heapq.heappushpop(top_k_heap, (distance, batch_ids[idx]))
 
-        # heap queue
-        nearest_neighbors = sorted(nearest_neighbors, key=lambda x: -x[0])
-
-        # normal list
-        # nearest_neighbors = sorted(nearest_neighbors, key=lambda x: -x[2])[:top_k]
-
-
-        # Return the top-k vectors
-        ids = [int(id) for _,id,_ in nearest_neighbors]
-        # print("OUR IDs",ids)
-        return ids
         
+        top_k_results = [heapq.heappop(top_k_heap)[1] for _ in range(len(top_k_heap))]
+        top_k_results.reverse() 
+    
+        return top_k_results
+        
+
     def _cal_score(self, vec1, vec2):
         dot_product = np.dot(vec1, vec2)
         norm_vec1 = np.linalg.norm(vec1)
@@ -174,62 +188,87 @@ class VecDB:
         cosine_similarity = dot_product / (norm_vec1 * norm_vec2)
         return cosine_similarity
 
+
     def _build_index(self):
-        # Placeholder for index building logic
-
-        # nlist = 100 # number of clusters
-        # m = 10
-        # k = 4
-        # quantizer = faiss.IndexFlatL2(DIMENSION)  # this remains the same
-        # index = faiss.IndexIVFPQ(quantizer, DIMENSION, nlist, m, 6)
-        #                                   # 8 specifies that each sub-vector is encoded as 8 bits
-        # for i in range(0,self._get_num_records(),100):
-        #     xb = self.get_n_rows(i,100)
+        batch_size_1 = 10
+        batch_size_2 = 10
+        max_iter = 200
         
-        #     index.train(xb)
-        #     index.add(xb)
+        num_records= self._get_num_records() 
+        
+        if num_records == 10**6:
+            n_clusters_1 = int(4 * np.sqrt(num_records))
+            
+        elif num_records == 10*10**6:
+            n_clusters_1 = 7000
 
-        # faiss.write_index(index, self.index_path)
+        elif num_records == 15*10**6:
+            n_clusters_1 = 10000
+        
+        elif num_records == 20*10**6:
+            n_clusters_1 = 13000
+            batch_size_1 = 1000
+            batch_size_2 = 10
+            max_iter = 1000
 
-        # 1 000 000 / 4 000 rows = 250 cluster
-        # 10 000 000/ 4 000 rows = 2500 cluster
-        # 15 000 000/ 4 000 rows = 3750 cluster
-        # 20 000 000/ 4 000 rows = 5000 cluster
+        # n_clusters_1 = int(4 * np.sqrt(num_records))
 
+                        
+        kmeans = MiniBatchKMeans(n_clusters=n_clusters_1, batch_size=batch_size_1, max_iter=max_iter,n_init=10)
 
-        kmeans = MiniBatchKMeans(n_clusters=n_clusters, random_state=DB_SEED_NUMBER, batch_size=batch_size)
+        vectors = self.get_all_rows()
 
-        for i in range(0, self._get_num_records(), batch_size):
-            batch = self.get_n_rows(i, batch_size)
-            kmeans.partial_fit(batch)
-        self.pq.fit(batch)
+        kmeans.fit(vectors)
 
+        labels = kmeans.predict(vectors)
+        centroids = kmeans.cluster_centers_
 
-        with open(self.index_path, 'wb') as index_file:
-            pickle.dump(kmeans, index_file)
+        cluster_mapping = {tuple(centroid): [] for centroid in centroids}
 
-        # print("Cluster centers",kmeans.cluster_centers_)
-        if os.path.exists(self.cluster_dir_paths):
-            shutil.rmtree(self.cluster_dir_paths)
+        for vector_id, label in enumerate(labels):
+            centroid_key = tuple(centroids[label])
+            cluster_mapping[centroid_key].append(vector_id)
+        
+        min_length=float('inf')
+        for centroid,vector_ids in cluster_mapping.items():
+            if len(vector_ids) < min_length and len(vector_ids) > 0:
+                min_length = len(vector_ids)
+        
+        n_clusters_2 = min_length
 
-        os.makedirs(self.cluster_dir_paths, exist_ok=True)
+        db_size = num_records//10**6  
+        file_path = os.path.join(self.index_file, f'centroids{db_size}.dat')
+        
+        with open(file_path, 'wb') as centroids_file:
+            pickle.dump(centroids, centroids_file)
+
+        ############################## SECOND LEVEL #######################################
+
+        kmeans_2nd_level = MiniBatchKMeans(n_clusters=n_clusters_2, batch_size=batch_size_2, max_iter=200,n_init=10)
+
+        if os.path.exists(self.clusters_dir_path):
+            shutil.rmtree(self.clusters_dir_path)
+
+        os.makedirs(self.clusters_dir_path, exist_ok=True)
+        
+        for i,centroid_1 in enumerate(cluster_mapping.keys()):
+        
+            cluster_vector_ids = cluster_mapping[centroid_1]
+            cluster_vector_ids_np = np.array(cluster_vector_ids)
     
-        cluster_files = {}
-        for cluster_id in range(n_clusters):
-            file_path = os.path.join(self.cluster_dir_paths, f'{cluster_id}.bin')
-            cluster_files[cluster_id] = open(file_path, 'wb')
+            cluster_vectors = self.get_n_random_rows(cluster_vector_ids_np)
     
-        try:
-            for i in range(0, self._get_num_records(), batch_size):
-                batch = self.get_n_rows(i, batch_size)
-                labels = kmeans.predict(batch)
-                ids = range(i, i + batch_size)
-                encoded_vectors = self.pq.encode(batch)
-                # print("Labels",labels)
+            labels = kmeans_2nd_level.fit_predict(cluster_vectors)
+            centroids_2 = kmeans_2nd_level.cluster_centers_
+
     
-                for label, vector, id in zip(labels, encoded_vectors, ids):
-                    cluster_files[label].write(id.to_bytes(ID_SIZE, byteorder='little'))
-                    cluster_files[label].write(vector.tobytes())
-        finally:
-            for f in cluster_files.values():
-                f.close()
+            cluster_mapping_2 = {tuple(centroid_2): [] for centroid_2 in centroids_2}
+    
+            for vector_id, label in zip(cluster_vector_ids,labels):
+                centroid_2_key = tuple(centroids_2[label])
+                cluster_mapping_2[centroid_2_key].append(vector_id)  
+                
+            file_path = os.path.join(self.index_file, f'{i}.dat')
+            with open(file_path, 'wb') as index_file:
+                pickle.dump(cluster_mapping_2, index_file)
+            

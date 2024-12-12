@@ -1,0 +1,31 @@
+score	-378.0	time	3.57	RAM	0.01 MB
+n_clusters_1 = 500 
+batch_size_1 = 50000
+nprobe_1 = 30
+n_clusters_2 = 100 
+batch_size_2 = 1
+nprobe_2 = 100
+
+score	-8.333333333333334	time	35.69	RAM	0.13 MB
+n_clusters_1 = 1000 
+batch_size_1 = 1000
+nprobe_1 = 30
+n_clusters_2 = 500 
+batch_size_2 = 1
+nprobe_2 = 500
+
+score	0.0	time	138.24	RAM	0.23 MB
+n_clusters_1 = 500
+batch_size_1 = 50000
+nprobe_1 = 30
+n_clusters_2 = 500
+batch_size_2 = 1
+nprobe_2 = 500
+
+
+score	-226.0	time	1.88	RAM	58.68 MB
+n_clusters_1 = 1000
+nprobe_1 = 30
+
+n_clusters_2 = 100
+nprobe_2 = 100

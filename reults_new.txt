@@ -1,0 +1,49 @@
+1M
+score	-63.666666666666664	time	0.94	RAM	8.14 MB
+            nprobe_1 = 30
+            nprobe_2 = 20     
+            scaling_factor = 500
+            n_clusters_1 = int(4 * np.sqrt(num_records))
+            n_clusters_2 = min_length
+            batch_size_1 = 10
+            batch_size_2 = 10
+            max_iter = 200
+
+10M
+score	-70.33333333333333	time	1.81	RAM	10.95 MB INDEX_SIZE= 104+5 = 109 xxxxxxxx
+            nprobe_1 = 50
+            nprobe_2 = 20
+            scaling_factor = 1000
+            n_clusters_1 = int(4 * np.sqrt(num_records))
+            n_clusters_2 = min_length
+            batch_size_1 = 10
+            batch_size_2 = 10
+            max_iter = 200
+
+score	-25.333333333333332	time	4.41	RAM	11.34 MB INDEX_SIZE= 65+2 = 67 MB
+            n_clusters_1 = 7000
+            n_clusters_2 = min_length
+            scaling_factor = 1000
+            nprobe_1 = 50
+            nprobe_2 = 20
+            batch_size_1 = 10
+            batch_size_2 = 10
+            max_iter = 200
+
+15M
+
+score	-205.0	time	2.36	RAM	5.77 MB INDEX_SIZE= 140 + 2.8 = 142.8 MB
+            scaling_factor = 2000
+            nprobe_1 = 50
+            nprobe_2 = 20
+            n_clusters_1 = 10000
+            n_clusters_2 = min_length
+            batch_size_1 = 10
+            batch_size_2 = 10
+            max_iter = 200
+
+
+
+
+
+
