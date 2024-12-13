@@ -115,8 +115,8 @@ class VecDB:
         elif num_records == 10*10**6:
             available_ram = 50*10**6
             scaling_factor = 500
-            nprobe_1 = 90
-            nprobe_2 = 40
+            nprobe_1 = 70
+            nprobe_2 = 30
 
         elif num_records == 15*10**6:
             available_ram = 50*10**6
@@ -127,8 +127,8 @@ class VecDB:
         elif num_records == 20*10**6:
             available_ram = 50*10**6
             scaling_factor = 4000
-            nprobe_1 = 200
-            nprobe_2 = 100
+            nprobe_1 = 150
+            nprobe_2 = 75
 
             
         vector_size_bytes = DIMENSION * ELEMENT_SIZE  
