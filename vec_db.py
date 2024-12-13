@@ -115,14 +115,14 @@ class VecDB:
         elif num_records == 10*10**6:
             available_ram = 50*10**6
             scaling_factor = 500
-            nprobe_1 = 90
-            nprobe_2 = 45
+            nprobe_1 = 120
+            nprobe_2 = 60
 
         elif num_records == 15*10**6:
             available_ram = 50*10**6
             scaling_factor = 1000
-            nprobe_1 = 120
-            nprobe_2 = 60
+            nprobe_1 = 140
+            nprobe_2 = 70
         
         elif num_records == 20*10**6:
             available_ram = 50*10**6

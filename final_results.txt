@@ -305,3 +305,83 @@ seed = 10
             scaling_factor = 4000
             nprobe_1 = 110
             nprobe_2 = 60
+
+    Team Number 13
+    1M	score	0.0	time	1.77	RAM	9.16 MB
+    10M	score	-5.333333333333333	time	3.78	RAM	24.03 MB
+    15M	score	-5.333333333333333	time	5.15	RAM	12.79 MB
+    20M	score	0.0	time	7.04	RAM	6.12 MB
+            if num_records == 10**6:
+                available_ram = 20*10**6
+                scaling_factor = 500
+                nprobe_1 = 90
+                nprobe_2 = 45
+
+            elif num_records == 10*10**6:
+                available_ram = 50*10**6
+                scaling_factor = 500
+                nprobe_1 = 90
+                nprobe_2 = 45
+
+            elif num_records == 15*10**6:
+                available_ram = 50*10**6
+                scaling_factor = 1000
+                nprobe_1 = 120
+                nprobe_2 = 60
+
+            elif num_records == 20*10**6:
+                available_ram = 50*10**6
+                scaling_factor = 4000
+                nprobe_1 = 150
+                nprobe_2 = 75
+
+///////////////////////////////////////////////////////////////////////////
+if num_records == 10**6:
+    available_ram = 20*10**6
+    scaling_factor = 500
+    nprobe_1 = 90
+    nprobe_2 = 45
+    
+elif num_records == 10*10**6:
+    available_ram = 50*10**6
+    scaling_factor = 500
+    nprobe_1 = 90
+    nprobe_2 = 45
+
+elif num_records == 15*10**6:
+    available_ram = 50*10**6
+    scaling_factor = 1000
+    nprobe_1 = 120
+    nprobe_2 = 60
+
+elif num_records == 20*10**6:
+    available_ram = 50*10**6
+    scaling_factor = 4000
+    nprobe_1 = 150
+    nprobe_2 = 75
+
+seed = 10
+    Team Number 13
+    1M	score	0.0	time	1.77	RAM	9.16 MB
+    10M	score	-5.333333333333333	time	3.78	RAM	24.03 MB
+    15M	score	-5.333333333333333	time	5.15	RAM	12.79 MB
+    20M	score	0.0	time	7.04	RAM	6.12 MB
+seed = 20
+    Team Number 13
+    1M	score	0.0	time	1.63	RAM	8.26 MB
+    10M	score	0.0	time	3.92	RAM	22.56 MB
+    15M	score	-11.666666666666666	time	5.22	RAM	11.20 MB
+    20M	score	0.0	time	7.40	RAM	3.32 MB
+seed = 5
+    Team Number 13
+    1M	score	0.0	time	1.62	RAM	8.46 MB
+    10M	score	-5.333333333333333	time	3.86	RAM	22.60 MB
+    15M	score	0.0	time	5.05	RAM	11.26 MB
+    20M	score	-7.0	time	7.04	RAM	2.86 MB
+seed = 123
+    Team Number 13
+    1M	score	0.0	time	1.65	RAM	8.58 MB
+    10M	score	-24.0	time	3.82	RAM	22.29 MB
+    15M	score	0.0	time	5.09	RAM	11.19 MB
+    20M	score	0.0	time	7.28	RAM	3.09 MB
+        
