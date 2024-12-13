@@ -199,7 +199,7 @@ class VecDB:
         num_records= self._get_num_records() 
         
         if num_records == 10**6:
-            n_clusters_1 = int(4 * np.sqrt(num_records))
+            n_clusters_1 = 4000
             
         elif num_records == 10*10**6:
             n_clusters_1 = 7000
