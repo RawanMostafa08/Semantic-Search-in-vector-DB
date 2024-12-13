@@ -384,4 +384,36 @@ seed = 123
     10M	score	-24.0	time	3.82	RAM	22.29 MB
     15M	score	0.0	time	5.09	RAM	11.19 MB
     20M	score	0.0	time	7.28	RAM	3.09 MB
+
+
+
+if num_records == 10**6:
+    available_ram = 20*10**6
+    scaling_factor = 500
+    nprobe_1 = 90
+    nprobe_2 = 45
+    
+elif num_records == 10*10**6:
+    available_ram = 50*10**6
+    scaling_factor = 500
+    nprobe_1 = 120
+    nprobe_2 = 60
+elif num_records == 15*10**6:
+    available_ram = 50*10**6
+    scaling_factor = 1000
+    nprobe_1 = 140
+    nprobe_2 = 70
+
+elif num_records == 20*10**6:
+    available_ram = 50*10**6
+    scaling_factor = 4000
+    nprobe_1 = 150
+    nprobe_2 = 75
+
+seed = 10
+    Team Number 13
+    1M	score	0.0	time	1.77	RAM	8.99 MB
+    10M	score	0.0	time	7.93	RAM	24.45 MB
+    15M	score	-5.333333333333333	time	6.00	RAM	12.20 MB
+    20M	score	0.0	time	7.23	RAM	7.00 MB
         
