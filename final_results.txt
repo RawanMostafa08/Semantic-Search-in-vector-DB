@@ -245,3 +245,63 @@ seed = 100
                 scaling_factor = 4000
                 nprobe_1 = 200
                 nprobe_2 = 100
+
+**********after 10M rebuild*****************
+    Team Number 13
+    1M	score	0.0	time	1.70	RAM	9.45 MB
+    10M	score	-5.666666666666667	time	3.02	RAM	23.87 MB
+    15M	score	0.0	time	4.18	RAM	12.23 MB
+    20M	score	-17.0	time	5.78	RAM	5.03 MB
+        if num_records == 10**6:
+            available_ram = 20*10**6
+            scaling_factor = 500
+            nprobe_1 = 90
+            nprobe_2 = 40
+            
+        elif num_records == 10*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 500
+            nprobe_1 = 70
+            nprobe_2 = 30
+
+        elif num_records == 15*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 1000
+            nprobe_1 = 100
+            nprobe_2 = 50
+        
+        elif num_records == 20*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 4000
+            nprobe_1 = 110
+            nprobe_2 = 60
+
+seed = 10
+    Team Number 13
+    1M	score	0.0	time	1.68	RAM	8.59 MB
+    10M	score	-5.333333333333333	time	2.99	RAM	22.21 MB
+    15M	score	-5.666666666666667	time	4.18	RAM	12.02 MB
+    20M	score	0.0	time	5.51	RAM	2.93 MB
+        if num_records == 10**6:
+            available_ram = 20*10**6
+            scaling_factor = 500
+            nprobe_1 = 90
+            nprobe_2 = 40
+            
+        elif num_records == 10*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 500
+            nprobe_1 = 70
+            nprobe_2 = 30
+
+        elif num_records == 15*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 1000
+            nprobe_1 = 100
+            nprobe_2 = 50
+        
+        elif num_records == 20*10**6:
+            available_ram = 50*10**6
+            scaling_factor = 4000
+            nprobe_1 = 110
+            nprobe_2 = 60
