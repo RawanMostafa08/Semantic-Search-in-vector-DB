@@ -1,4 +1,7 @@
 # 🚀 Semantic Search Engine with Vectorized Databases  
+<div align="center">
+  <img src="https://media.giphy.com/media/dW6pIawajy6Mtd8aSA/giphy.gif?cid=790b7611lo0bzhbg2mhoxcdbpbe1f2ed081vmgixqwkutre9&ep=v1_gifs_search&rid=giphy.gif&ct=g" alt="Excited GIF">
+</div>
 
 ## 📚 Introduction  
 This project aims to design and implement an **indexing system for a semantic search database** that efficiently retrieves information based on vector space embeddings. The indexing mechanism focuses on a **vector column**, ensuring high accuracy and speed even for large datasets (up to 20 million entries).  
