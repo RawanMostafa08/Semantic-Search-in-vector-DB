@@ -1,40 +1,72 @@
-# Semantic Search Engine with Vectorized Databases
-This repository contains the code and documentation for a simple semantic search engine with vectorized databases and the evaluation of its performance. The project focuses on building an efficient indexing system to retrieve information based on vector space embeddings.
+# 🚀 Semantic Search Engine with Vectorized Databases  
 
-## Project Overview
+## 📚 Introduction  
+This project aims to design and implement an **indexing system for a semantic search database** that efficiently retrieves information based on vector space embeddings. The indexing mechanism focuses on a **vector column**, ensuring high accuracy and speed even for large datasets (up to 20 million entries).  
 
-The key components of the project include:
-- `VecDB`: A class representing the vectorized database, responsible for storing and retrieving vectors.
-- `generate_database()`: A method to generate a random database.
-- `get_one_row()`: A method to get one row from the database given its index.
-- `insert_records()`: A method to insert multiple records into the database. It then rebuilds the index.
-- `retrieve()`: A method to retrieve the top-k most similar based on a given query vector.
-- `_cal_score()`: A helper method to calculate the cosine similarity between two vectors.
-- `_build_index()`: A placeholder method for implementing an indexing mechanism.
+---
 
-## Getting Started
+## 🌟 What is Semantic Search?  
+Semantic search is a technology that enables search engines to understand the **meaning** behind search queries and provide relevant results based on the **context** and **intent** of the user.  
 
-To get started with the project, follow these steps:
-1. Clone the repository to your local machine.
-2. Run the provided code (which is almost the worst implementation of DB) and then edit/update the VecDB class as per the project requirements.
-3. Customize the code and add any additional features as needed. However, avoid modifying the DB_SEED_NUMBER, or the VecDB.\_\_init__ & VecDB.retrieve method signature.
-4. Run the evaluation to assess the accuracy of your implementation. The final evaluation will use the 'eval' function, but I wil update the 'run_queries' function.
+Unlike traditional keyword-based search methods, semantic search uses **natural language processing (NLP)** and **machine learning** to analyze relationships between words, phrases, and concepts.  
 
-## Usage
+For example:  
+- **Query**: "What are the best ways to study effectively?"  
+- **Result**: Returns tips on studying, time management strategies, and productivity techniques, even if the exact query words are not in the database.  
 
-The project provides a `VecDB` class that you can use to interact with the vectorized database. Here's an example of how to use it:
+---
 
-```python
-import numpy as np
-from vec_db import VecDB
+## 📐 Project Scope  
+The project implements an indexing system that meets the following requirements:  
+- **Data Structure**:  
+  - The database contains only two columns:  
+    - `ID`: Unique identifier for each row.  
+    - `Embedding`: A 70-dimensional vector representing the data.  
+- **Indexing**:  
+  - Efficiently retrieves the top `k` most similar rows to the input query vector using **cosine similarity**.  
+- **Scalability**: Handles datasets with up to **20 million vectors**.  
+- **Performance**: Responds in a reasonable time for `k` up to 10.  
 
-# Create an instance of VecDB and random DB of size 10K
-db = VecDB(db_size = 10**4)
 
-# Retrieve similar images for a given query
-query_vector = np.random.rand(1,70) # Query vector of dimension 70
-similar_images = db.retrieve(query_vector, top_k=5)
-print(similar_images)
-```
+## ⚡ Evaluation Criteria  
 
-Feel free to customize the code to suit your specific use case.
+1. **Accuracy (Recall)**:  
+   - The system must accurately retrieve the top `k` most similar vectors for a query.  
+
+2. **Efficiency**:  
+   - Efficient retrieval with reasonable memory usage and response time.  
+
+3. **Scalability**:  
+   - Handles datasets up to 20 million entries without performance degradation.  
+---
+
+## 📈 Performance Highlights  
+
+### Benchmarks  
+
+| **Dataset Size** | **Score** | **Time (s)** | **Peak RAM Usage (MB)** |  
+|-------------------|-----------|---------------|--------------------------|  
+| 1M               | 0.0       | 1.49          | 8.50                     |  
+| 10M              | 0.0       | 4.20          | 22.25                    |  
+| 15M              | 0.0       | 5.59          | 11.32                    |  
+| 20M              | 0.0       | 6.65          | 3.04                     |  
+
+### Constraints  
+
+| **DB Size**      | **Peak RAM Usage (MB)** | **Time Limit (s)** | **Min Accepted Score** | **Max Index Size (MB)** |  
+|-------------------|--------------------------|---------------------|-------------------------|--------------------------|  
+| 1M               | 20                       | 3                   | -5000                  | 50                       |  
+| 10M              | 50                       | 6                   | -5000                  | 100                      |  
+| 15M              | 50                       | 8                   | -5000                  | 150                      |  
+| 20M              | 50                       | 10                  | -5000                  | 200                      |  
+
+### Contributors 
+
+<table align="center" >
+  <tr>
+      <td align="center"><a href="https://github.com/SH8664"><img src="https://avatars.githubusercontent.com/u/113303945?v=4" width="150px;" alt=""/><br /><sub><b>Sara Bisheer</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/rawanMostafa08"><img src="https://avatars.githubusercontent.com/u/97397431?v=4" width="150px;" alt=""/><br /><sub><b>Rawan Mostafa</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com//mennamohamed0207"><img src="https://avatars.githubusercontent.com/u/90017398?v=4" width="150px;" alt=""/><br /><sub><b>Menna Mohammed</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/fatmaebrahim"><img src="https://avatars.githubusercontent.com/u/113191710?v=4" width="150;" alt=""/><br /><sub><b>Fatma Ebrahim</b></sub></a><br /></td>
+  </tr>
+</table>
